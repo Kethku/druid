@@ -55,6 +55,7 @@ pub struct TextBox<T> {
     cursor_timer: TimerToken,
     cursor_on: bool,
     multiline: bool,
+    expand: bool,
     alignment: TextAlignment,
     alignment_offset: f64,
     text_pos: Point,
@@ -148,6 +149,7 @@ impl<T> TextBox<T> {
             cursor_on: false,
             placeholder,
             multiline: false,
+            expand: false,
             alignment: TextAlignment::Start,
             alignment_offset: 0.0,
             text_pos: Point::ZERO,
@@ -161,6 +163,11 @@ impl<T> TextBox<T> {
         this.editor.set_multiline(true);
         this.multiline = true;
         this
+    }
+
+    pub fn with_expand(mut self) -> Self {
+        self.expand = true;
+        self
     }
 
     /// Builder-style method to set the `TextBox`'s placeholder text.
@@ -520,7 +527,7 @@ impl<T: TextStorage + EditableText> Widget<T> for TextBox<T> {
     }
 
     fn layout(&mut self, ctx: &mut LayoutCtx, bc: &BoxConstraints, data: &T, env: &Env) -> Size {
-        let width = env.get(theme::WIDE_WIDGET_WIDTH);
+        let mut width = env.get(theme::WIDE_WIDGET_WIDTH);
         let text_insets = env.get(theme::TEXTBOX_INSETS);
 
         self.placeholder.rebuild_if_needed(ctx.text(), env);
@@ -535,6 +542,10 @@ impl<T: TextStorage + EditableText> Widget<T> for TextBox<T> {
         } else {
             self.editor.layout().layout_metrics()
         };
+
+        if self.expand {
+            width = width.max(text_metrics.size.width);
+        }
 
         let height = text_metrics.size.height + text_insets.y_value();
         let size = bc.constrain((width, height));
