@@ -544,7 +544,7 @@ impl<T: TextStorage + EditableText> Widget<T> for TextBox<T> {
         };
 
         if self.expand {
-            width = width.max(text_metrics.size.width);
+            width = width.max(text_metrics.size.width) + text_insets.x_value();
         }
 
         let height = text_metrics.size.height + text_insets.y_value();
